@@ -25,6 +25,10 @@ MAIN_QUARTER = "2026Q2"
 N_ISSUERS = 1000          # operating companies ranked by total reported value
 SEED = 42
 
+# Provisional until checked against results/sensitivity.csv
+RECIPE = dict(low=10, high=200, method="knn", top_k=15, z_min=3.0)
+LOUVAIN_RUNS = 20
+
 
 def sec_headers():
     """SEC rejects automated requests that do not declare a contact in the User-Agent."""

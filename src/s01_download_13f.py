@@ -4,7 +4,10 @@ Filters: original 13F-HR filings for the release's main report period; no option
 positive value. Amendments and late filings are excluded so that each quarter is one snapshot.
 Output: data/interim/holdings_<quarter>.parquet and a per-quarter log in results/.
 """
+import http.client
+import shutil
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -12,8 +15,35 @@ import pandas as pd
 
 from config import INTERIM, QUARTERS, RAW, RESULTS, sec_headers
 
+MAX_ATTEMPTS = 12
+
 BASES = ("https://www.sec.gov/files/structureddata/data/form-13f-data-sets/",
          "https://www.sec.gov/files/datastandardsinnovation/data/form-13f-data-sets/")
+
+
+def fetch(url, target):
+    """Stream to a .part file, resuming after dropped connections; rename only when complete."""
+    part = target.with_suffix(".part")
+    for attempt in range(MAX_ATTEMPTS):
+        done = part.stat().st_size if part.exists() else 0
+        headers = {**sec_headers(), **({"Range": f"bytes={done}-"} if done else {})}
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=120) as resp:
+                # A server that ignores Range answers 200 and restarts from the first byte
+                with open(part, "ab" if resp.status == 206 else "wb") as fh:
+                    shutil.copyfileobj(resp, fh, 1024 * 1024)
+                    if resp.length:
+                        raise http.client.IncompleteRead(b"")
+            if not zipfile.is_zipfile(part):
+                raise ValueError(f"not a valid zip: {part.name}")
+            part.replace(target)
+            return
+        except (http.client.HTTPException, ConnectionError, TimeoutError, urllib.error.URLError) as exc:
+            if isinstance(exc, urllib.error.HTTPError) and exc.code == 404:
+                raise
+            print(f"  retry {attempt + 1}: {type(exc).__name__}", flush=True)
+            time.sleep(5 * (attempt + 1))
+    raise RuntimeError(f"gave up on {url}")
 
 
 def download(release):
@@ -22,10 +52,8 @@ def download(release):
     if target.exists():
         return target
     for base in BASES:
-        req = urllib.request.Request(f"{base}{release}_form13f.zip", headers=sec_headers())
         try:
-            with urllib.request.urlopen(req, timeout=600) as resp:
-                target.write_bytes(resp.read())
+            fetch(f"{base}{release}_form13f.zip", target)
             time.sleep(1)
             return target
         except urllib.error.HTTPError as exc:
@@ -36,11 +64,13 @@ def download(release):
 
 def extract(path, period):
     with zipfile.ZipFile(path) as z:
-        with z.open("SUBMISSION.tsv") as fh:
+        # Some releases keep the tables at the archive root, others inside a dated subfolder
+        member = {name.rsplit("/", 1)[-1]: name for name in z.namelist()}
+        with z.open(member["SUBMISSION.tsv"]) as fh:
             sub = pd.read_csv(fh, sep="\t", dtype=str)
-        with z.open("COVERPAGE.tsv") as fh:
+        with z.open(member["COVERPAGE.tsv"]) as fh:
             cover = pd.read_csv(fh, sep="\t", dtype=str, usecols=["ACCESSION_NUMBER", "FILINGMANAGER_NAME"])
-        with z.open("INFOTABLE.tsv") as fh:
+        with z.open(member["INFOTABLE.tsv"]) as fh:
             info = pd.read_csv(fh, sep="\t", dtype=str,
                                usecols=["ACCESSION_NUMBER", "NAMEOFISSUER", "TITLEOFCLASS", "CUSIP", "VALUE",
                                         "SSHPRNAMT", "SSHPRNAMTTYPE", "PUTCALL"])

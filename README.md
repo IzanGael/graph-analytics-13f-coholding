@@ -1,7 +1,7 @@
 # Investor co-holding network (SEC Form 13F)
 
 Graph Analytics project, Albert School x Mines, 2026.
-Authors: Izan Gael Rooke Mora and Oussama Maaref.
+Authors: Izan Gael Rooke Mora, Oussama Maaref and Ryan Ebanda.
 
 **Question:** do shared institutional holdings define groups of stocks that differ from official sectors, persist over time, and predict co-movement better than sectors do?
 
