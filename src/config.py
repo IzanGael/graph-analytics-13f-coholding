@@ -35,8 +35,11 @@ MAIN_QUARTER = "2026Q2"
 N_ISSUERS = 1000          # operating companies ranked by total reported value
 SEED = 42
 
-# Provisional until checked against results/sensitivity.csv
-RECIPE = dict(low=10, high=200, method="knn", top_k=15, z_min=3.0)
+# Graph recipe decided 5 Nov 2026 (see docs/STATUS.md): all managers, size-aware chance model
+# (gutils.shared_holder_z_bicm), each stock keeps its top_k partners with z > z_min.
+# top_k=10 and 25 are sensitivity checks. The 10-200 manager rule survives only in src/drafts.
+RECIPE = dict(method="knn", top_k=15, z_min=3.0, null="bicm")
+SENSITIVITY_K = (10, 25)
 LOUVAIN_RUNS = 20
 
 

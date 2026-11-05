@@ -66,6 +66,9 @@ Last updated: 4 Nov 2026.
 - All 19 quarters rebuilt from the ZIPs (`s01`, then `s01b`, `s02`, `s03a`), all exit 0. The median fix settled in 3 passes (32,957 rows, then 26, then 0). Quarterly reliable totals, mapping coverage (96.3% to 99.3%) and the null-test numbers reproduced the earlier incrementally built dataset exactly, so the earlier faulty runs left no material trace. Backup of the pre-rebuild data kept locally in `data/interim/backup_before_fixedpoint`.
 - No automated tests exist; the evidence is that the whole pipeline runs end to end from raw ZIPs and reproduces earlier numbers.
 
+## Filter 8, backbone size (decided 5 Nov, Izan: "do it")
+Main graph: each stock keeps its top 15 partners with z > 3 under the size-aware chance model, all managers, top 1,000 operating companies per quarter. Sensitivity checks: k = 10 and 25, top 500 and 2,000 stocks, Newman weights, and the old 10-200 manager rule. Set in `src/config.py` (`RECIPE`, `SENSITIVITY_K`). Reason: global cut-offs fail, and k = 15 balances readability and coverage; modularity should not be used to pick k because sparser graphs always score higher. Still to look at: who the 49 stocks with no partner are.
+
 ## Filters still to review with the students
 Izan does not yet accept these three. Explain the why behind each, with evidence and alternatives, before relying on them:
 - Top 1,000 operating companies by value, without ETFs and funds. **Decided 5 Nov (Izan): top 1,000 re-ranked each quarter as the main universe; run top 500 and top 2,000 as sensitivity checks.** Evidence: top 1,000 hold 92% of money in 2026 Q2 (top 500: 84%, top 3,000: 99%); the 1,000th stock has 611 holders. 1,000 was a round number, hence the checks. Quarter-to-quarter comparisons use stocks present in both quarters; the overlap is not yet measured.
@@ -86,7 +89,11 @@ The three agreed fixes are built into `s01` and all 19 quarters rebuilt. Totals 
 ## Open decisions
 - **Repo visibility:** public at submission, or private with graders invited. Undecided.
 
+## Data for graders (5 Nov)
+Processed-data bundle built locally in `export/` (not committed): `processed_13f_2021Q4-2026Q2.zip`, 0.72 GB, 40 files, extraction verified identical, plus `MANIFEST.txt` with SHA-256 hashes. Drive folder created in Izan's account with the manifest inside: https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7 . **Open:** Izan must upload the zip into that folder by hand (the Drive connector cannot carry 0.7 GB), then set sharing so graders can open it (the folder is private right now), and the README link must be tested while logged out.
+
 ## Before submission
+- [ ] Upload `export/processed_13f_2021Q4-2026Q2.zip` to the Drive folder, set sharing, test the link logged out.
 - [ ] **Delete `CLAUDE.md` from the repo** (requested by Izan). It would remain in the git history unless the history is rewritten or the repo is recreated, so decide how to handle that.
 - [ ] Get the teacher's written confirmation that a group of three is allowed; the instructions PDF says two.
 - [ ] Invite Oussama and Ryan to the repo (Izan is doing this).

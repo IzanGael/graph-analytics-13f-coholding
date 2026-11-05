@@ -14,6 +14,7 @@ Authors: Izan Gael Rooke Mora, Oussama Maaref and Ryan Ebanda.
 - **Sector mapping:** OpenFIGI (CUSIP to ticker and security type), SEC `company_tickers.json`, the SEC CIK lookup file and SEC submissions API (company to SIC), and Kenneth French's Fama-French industry definitions. Full list with URLs in [docs/SOURCES.md](docs/SOURCES.md).
 - **Code reuse:** no code for these data sets was copied from the internet or from existing projects. The code was written for this project with AI assistance, see [docs/AI_USE.md](docs/AI_USE.md). Methods are cited in SOURCES.md.
 - **Raw and processed data are not in the repository** (about 1.4 GB of ZIP files and 0.85 GB of processed files). The scripts below download and rebuild them. The reviewed list of company matches, `data/manual_overrides.csv`, is included.
+- **Processed data, ready to use (0.72 GB zip):** [Google Drive folder](https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7), file `processed_13f_2021Q4-2026Q2.zip` with a `MANIFEST.txt` of file hashes. Unzip it into `data/interim/` and skip steps 1 to 3 below. The raw SEC files are public and are not copied there.
 
 ## How to reproduce
 Python 3.11. Install the packages, then set a contact address, which the SEC requires in the User-Agent of automated requests (use your own, never commit it):
