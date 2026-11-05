@@ -63,22 +63,28 @@ def shared_holder_z(p, uni):
     return C, z, k, m
 
 
-def solve_bicm(k, n, iters=3000, tol=1e-7):
+def solve_bicm(k, n, iters=8000, tol=1e-9):
     """Bipartite configuration model: p_im = x_i y_m / (1 + x_i y_m) with x, y chosen so that the expected
-    stock degrees equal k and the expected manager degrees equal n. Returns P, iterations, max degree errors."""
+    stock degrees equal k and the expected manager degrees equal n. Returns P, iterations, max degree errors.
+
+    Managers with the same number of links share the same y, so the fixed-point iteration runs over the
+    distinct manager sizes (a few hundred) instead of every manager (thousands): same answer, far faster.
+    """
     if (k <= 0).any() or (n <= 0).any():
         raise ValueError("solve_bicm needs every stock and manager to have at least one link")
+    levels, inverse, counts = np.unique(n, return_inverse=True, return_counts=True)
+    levels = levels.astype(float)
     E = k.sum()
-    x, y = k / np.sqrt(E), n / np.sqrt(E)
+    x, y = k / np.sqrt(E), levels / np.sqrt(E)
     for it in range(iters):
         D = 1.0 + np.outer(x, y)
-        x_new = k / (y[None, :] / D).sum(axis=1)
-        y_new = n / (x[:, None] / D).sum(axis=0)
+        x_new = k / ((counts * y)[None, :] / D).sum(axis=1)
+        y_new = levels / (x[:, None] / D).sum(axis=0)
         gap = max(np.abs(x_new / x - 1).max(), np.abs(y_new / y - 1).max())
         x, y = x_new, y_new
         if gap < tol:
             break
-    P = np.outer(x, y)
+    P = np.outer(x, y[inverse])
     P = P / (1.0 + P)
     return P, it + 1, float((np.abs(P.sum(axis=1) - k) / k).max()), float((np.abs(P.sum(axis=0) - n) / n).max())
 

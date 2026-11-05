@@ -25,7 +25,7 @@ Last updated: 4 Nov 2026.
 ## Where things stand
 - **Done and run end to end from the raw ZIPs:** `s01` (download and clean, 19 quarters), `s01b` (fix wrong prices, flag unreliable filers), `s02` (sector mapping), `s03a` (test of the size-aware chance expectation), `s03b` (tail probe and backbone options). Data lives in `data/interim/` (not committed).
 - **Drafts in `src/drafts/`, never run, not part of the pipeline:** `s03_sensitivity.py`, `s04_main_analysis.py`, `s05_persistence_returns.py`. They still use the superseded 10-200 manager rule and must be rewritten on top of `gutils.shared_holder_z_bicm`.
-- **Next to build:** the backbone graph for all 19 quarters with the size-aware chance expectation (graph size k still to be chosen: 15 proposed, 10 and 25 as checks); then required metrics (components, diameter, radius, centralities), communities (Louvain, label propagation), comparison with sectors and with size tiers, persistence across quarters, and the falls and selling test.
+- **Main graph (k = 15) and the k = 10 / 25 variants are built for all 19 quarters** (`s04_build_graphs.py`). **Next:** required metrics (components, diameter, radius, centralities, core-periphery), communities (Louvain, label propagation), comparison with sectors and with size tiers, persistence across quarters, the falls and selling test, then sensitivity checks, report and slides. A fresh-eyes audit is the first task of the next session (see `docs/HANDOFF.md`).
 
 ## Known problems to resolve
 - Centrality rankings changed heavily with the manager filter in the feasibility test (Voya versus PepsiCo at the top of PageRank), so a "systemic stock" claim is not yet supported; redo on the new graph.
@@ -68,6 +68,12 @@ Last updated: 4 Nov 2026.
 
 ## Filter 8, backbone size (decided 5 Nov, Izan: "do it")
 Main graph: each stock keeps its top 15 partners with z > 3 under the size-aware chance model, all managers, top 1,000 operating companies per quarter. Sensitivity checks: k = 10 and 25, top 500 and 2,000 stocks, Newman weights, and the old 10-200 manager rule. Set in `src/config.py` (`RECIPE`, `SENSITIVITY_K`). Reason: global cut-offs fail, and k = 15 balances readability and coverage; modularity should not be used to pick k because sparser graphs always score higher. Still to look at: who the 49 stocks with no partner are.
+
+## Main graph built for all 19 quarters (`src/s04_build_graphs.py`, `results/graph_summary.csv`, `figures/f9_graph_over_time.png`)
+- The chance model solver was made about 10x faster by grouping managers of equal size (same answer; four tests in `tests/test_gutils.py`; the 2026 Q2 numbers reproduced exactly). Solver error in every quarter under 0.009% (this checks that expected holders per stock and per manager size match the observed counts; it is numerical precision, not a measure of fit).
+- Every quarter: 1,000 stocks, 6,100 to 8,200 managers, about 9,500 to 10,100 links with top-15 (about 19-20 per stock), 903 to 939 stocks in the biggest connected group, 49 to 82 stocks with no link (more in 2021-22, 49 in 2026 Q2), 55 to 89 components.
+- Quarter to quarter: 87-93% of the stocks are the same; of the links among stocks present in both, Jaccard 0.47-0.52 (about two thirds of a quarter's links reappear next quarter).
+- Not yet done: who the isolated stocks are; diameter, radius, centralities, communities.
 
 ## Filters still to review with the students
 Izan does not yet accept these three. Explain the why behind each, with evidence and alternatives, before relying on them:

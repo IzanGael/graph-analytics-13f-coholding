@@ -1,5 +1,7 @@
 # How to work on this project
 
+If you are a new session: read `docs/HANDOFF.md` first (project summary, what is done, what is left, first task), then `docs/STATUS.md`.
+
 The students want to make the decisions and learn to make them themselves. Read `docs/STATUS.md` first: it says where the project stands and what is waiting on a decision.
 
 ## Working style
@@ -9,7 +11,7 @@ The students want to make the decisions and learn to make them themselves. Read 
 - Report results honestly, including failures and results that go against the hypothesis.
 
 ## Reply format after each step
-1. **Done:** what was just done, what it showed, and why it matters for the question.
+1. **Done:** what was just done, the results in simple words, and why it matters for the question. Use a graph whenever a picture explains the result better than numbers, and show it in the chat as well as saving it. Explain any technical term the first time it appears.
 2. **Decision:** the choice to make next, with 2-3 options and the trade-off of each.
 3. **Recommendation:** your pick and why, in one or two sentences. Then ask and wait.
 
