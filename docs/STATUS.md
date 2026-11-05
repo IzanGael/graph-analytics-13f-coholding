@@ -101,7 +101,7 @@ Processed-data bundle built locally in `export/` (not committed): `processed_13f
 ## Before submission
 - [ ] Upload `export/processed_13f_2021Q4-2026Q2.zip` to the Drive folder, set sharing, test the link logged out.
 - [ ] **Delete `CLAUDE.md` from the repo** (requested by Izan). It would remain in the git history unless the history is rewritten or the repo is recreated, so decide how to handle that.
-- [ ] Get the teacher's written confirmation that a group of three is allowed; the instructions PDF says two.
+- [x] Teacher's written confirmation that a group of three is allowed: Izan reports it is done (5 Nov); the instructions PDF says two.
 - [ ] Invite Oussama and Ryan to the repo (Izan is doing this).
 - [ ] Settle repo visibility and check that the link works for someone logged out or invited.
 - [ ] Complete the README reproduction steps and the data link.

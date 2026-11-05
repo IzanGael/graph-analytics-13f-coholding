@@ -4,7 +4,7 @@ You are taking over a master's course project mid-way. Read this file first, the
 
 ## 1. The project in two lines
 Graph Analytics (Albert School x Mines, 2026). Build a stock co-holding network from SEC Form 13F filings and test whether groups of stocks formed by shared investors differ from official sectors, persist over time, and predict co-movement better than sectors do.
-**Team of three** (the instructions PDF says two; the teacher said in class that three is allowed; written confirmation is still missing): Izan Gael Rooke Mora (repo owner, the person you talk to), Oussama Maaref, Ryan Ebanda. Emails are in `docs/STATUS.md`.
+**Team of three** (the instructions PDF says two; the teacher allowed three; Izan reports having the written confirmation): Izan Gael Rooke Mora (repo owner, the person you talk to), Oussama Maaref, Ryan Ebanda. Emails are in `docs/STATUS.md`.
 
 ## 2. Deadlines
 - **Written report: Tue 10 Nov 2026, 08:00 Paris**, PDF, max 15 pages, template `written-report-template.docx` (sections: Abstract, Introduction, Dataset Presentation, Description of the Analysis, Results, Conclusions, References), names and emails of all authors, GitHub link, AI-use statement.
@@ -59,7 +59,7 @@ Required content per the instructions: data source and whether existing code was
 6. **Sensitivity checks**: k = 10 and 25 (graphs already built), top 500 and 2,000 stocks, Newman weights (1/(n-1) per manager), the old 10-200 manager rule.
 7. Rewrite or delete `src/drafts/` scripts; add tests as useful.
 8. **Report** (template, max 15 pages) and **slides** (8 minutes, three speakers).
-9. Housekeeping: upload the Drive zip and set sharing, test the README link logged out; confirm the teacher's written OK for three people; check SEC reuse terms; verify citations (cited from memory so far: Newman 2001 weights, Saracco et al. 2015/2017 bipartite configuration model, Blondel et al. 2008 Louvain, Raghavan et al. 2007 label propagation, Tumminello et al. 2011); decide public or private for the repo; **delete `CLAUDE.md` before submission** (Izan's request; it stays in git history unless history is rewritten or the repo recreated; decide how); finish the README; keep logs current.
+9. Housekeeping: upload the Drive zip and set sharing, test the README link logged out; check SEC reuse terms; verify citations (cited from memory so far: Newman 2001 weights, Saracco et al. 2015/2017 bipartite configuration model, Blondel et al. 2008 Louvain, Raghavan et al. 2007 label propagation, Tumminello et al. 2011); decide public or private for the repo; **delete `CLAUDE.md` before submission** (Izan's request; it stays in git history unless history is rewritten or the repo recreated; decide how); finish the README; keep logs current.
 
 ## 7. Known weaknesses and open doubts (from our own review; probe these)
 - Thresholds in the value flags (5x own median, 5x neighbours, 2x price, 20% of value) were never tuned; Bank of Montreal (price rule, many quarters) and JPMorgan 2026Q2 (spike, $1.7tn) may be false flags. No outside check of quarterly totals against published market values.
