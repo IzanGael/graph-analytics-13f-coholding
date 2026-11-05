@@ -26,6 +26,12 @@ Example, with invented numbers:
 >
 > Which one do you want?
 
+## Data transformations
+1. Look at the data and find what changed: formats, names, columns, units.
+2. Explain each problem clearly, with the top 3 solutions for each.
+3. Decide together with the student which solution is best.
+4. Only then implement it and build the final dataset. Do not apply a transformation before it is agreed.
+
 ## Keeping records
 - After each decision, update `docs/STATUS.md`: what was decided, why, and the next step.
 - Cite every external source and code reuse in `docs/SOURCES.md`. Uncited internet code means a grade of zero.

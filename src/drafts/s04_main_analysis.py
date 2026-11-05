@@ -1,8 +1,17 @@
-"""Step 4: required graph metrics, centralities and communities for the main quarter.
+"""DRAFT, NOT PART OF THE PIPELINE AND NEVER RUN. Written before the design decisions of 5 Nov 2026: it still uses the
+superseded 10-200 manager rule and the old chance model. Kept for reference until it is rewritten.
+
+Step 4: required graph metrics, centralities and communities for the main quarter.
 
 Outputs in results/: graph_stats.json, centrality.csv, communities.csv, community_summary.csv,
 partition_comparison.csv, centrality_correlations.csv, community_managers.csv
 """
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # shared modules live in src/
+
 import json
 from collections import Counter
 
@@ -11,7 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 
-import graphlib as gl
+import gutils as gl
 from config import LOUVAIN_RUNS, MAIN_QUARTER, N_ISSUERS, RECIPE, RESULTS, SEED
 
 rng = np.random.default_rng(SEED)

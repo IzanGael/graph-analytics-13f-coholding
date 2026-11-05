@@ -16,6 +16,9 @@ import pandas as pd
 from config import INTERIM, QUARTERS, RAW, RESULTS, sec_headers
 
 MAX_ATTEMPTS = 12
+DOLLAR_REPORTING_START = pd.Timestamp("2023-01-03")
+MIN_HOLDERS_FOR_PRICE = 5
+UNIT_BAND = (300, 3000)   # a ratio this far from 1 reads as a 1,000x unit error
 
 BASES = ("https://www.sec.gov/files/structureddata/data/form-13f-data-sets/",
          "https://www.sec.gov/files/datastandardsinnovation/data/form-13f-data-sets/")
@@ -62,6 +65,22 @@ def download(release):
     raise FileNotFoundError(release)
 
 
+def median_price(info):
+    """Quarter's median value/shares per security, row-aligned; NaN if too few holders to trust."""
+    price = (info["VALUE"] / info["SHARES"]).groupby(info["CUSIP"]).transform("median")
+    holders = info.groupby("CUSIP")["CIK"].transform("nunique")
+    return price.where(holders >= MIN_HOLDERS_FOR_PRICE)
+
+
+def fix_units(info):
+    """Keep reported value; rescale by 1,000 only when that brings it close to shares x median price."""
+    ratio = info["VALUE"] / (info["SHARES"] * median_price(info))
+    too_big = ratio.between(*UNIT_BAND)
+    too_small = ratio.between(1 / UNIT_BAND[1], 1 / UNIT_BAND[0])
+    value = info["VALUE"].where(~too_big, info["VALUE"] / 1000).where(~too_small, info["VALUE"] * 1000)
+    return value, int(too_big.sum()), int(too_small.sum())
+
+
 def extract(path, period):
     with zipfile.ZipFile(path) as z:
         # Some releases keep the tables at the archive root, others inside a dated subfolder
@@ -76,15 +95,27 @@ def extract(path, period):
                                         "SSHPRNAMT", "SSHPRNAMTTYPE", "PUTCALL"])
     keep = sub[(sub["PERIODOFREPORT"] == period) & (sub["SUBMISSIONTYPE"] == "13F-HR")]
     # A manager filing twice for the period keeps its largest accession number (the latest one)
-    keep = keep.sort_values("ACCESSION_NUMBER").drop_duplicates("CIK", keep="last")
-    info = info.merge(keep[["ACCESSION_NUMBER", "CIK"]], on="ACCESSION_NUMBER")
+    # The latest filing wins; the accession prefix identifies the filing agent, so it cannot order filings by itself
+    keep = keep.assign(_filed=pd.to_datetime(keep["FILING_DATE"], format="%d-%b-%Y")).sort_values(["_filed", "ACCESSION_NUMBER"]).drop_duplicates("CIK", keep="last")
+    info = info.merge(keep[["ACCESSION_NUMBER", "CIK", "FILING_DATE"]], on="ACCESSION_NUMBER")
     log = {"filings": len(keep), "rows_all": len(info)}
     info = info[info["PUTCALL"].isna() & (info["SSHPRNAMTTYPE"] == "SH")].copy()
     info["VALUE"] = pd.to_numeric(info["VALUE"], errors="coerce")
+    # SEC readme: value is in dollars from 3 Jan 2023 and in thousands of dollars before that
+    filed = pd.to_datetime(info["FILING_DATE"], format="%d-%b-%Y")
+    log["rows_in_thousands"] = int((filed < DOLLAR_REPORTING_START).sum())
+    info.loc[filed < DOLLAR_REPORTING_START, "VALUE"] *= 1000
     info["SHARES"] = pd.to_numeric(info["SSHPRNAMT"], errors="coerce")
     info = info[(info["VALUE"] > 0) & (info["SHARES"] > 0)]
     info["CUSIP"] = info["CUSIP"].str.upper().str.strip()
     info = info[info["CUSIP"].str.len() == 9]
+    placeholder = info["CUSIP"].str.fullmatch(r"(.)\1{8}")   # 000000000, 999999999, AAAAAAAAA...
+    log["rows_placeholder_cusip"] = int(placeholder.sum())
+    info = info[~placeholder].copy()
+    log["value_before_unit_fix_tn"] = info["VALUE"].sum() / 1e12
+    info["VALUE"], log["rows_divided_1000"], log["rows_multiplied_1000"] = fix_units(info)
+    log["value_after_unit_fix_tn"] = info["VALUE"].sum() / 1e12
+    log["shares_x_price_tn"] = (info["SHARES"] * median_price(info)).sum() / 1e12
     log["rows_long_shares"] = len(info)
     log["managers"] = info["CIK"].nunique()
     log["cusips"] = info["CUSIP"].nunique()

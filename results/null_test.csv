@@ -1,0 +1,9 @@
+,old (popularity only),new (popularity + manager size)
+median observed/expected,4.74,0.99
+share of pairs with z>3 (%),99.8,17.4
+share of pairs with z<-3 (%),0.0,20.4
+median z,38.86,-0.25
+spearman z vs popularity,-0.17,0.16
+spearman z vs mean size of shared managers,0.063,-0.229
+top-5000 pairs touching a top-50-held stock (%),4.1,23.7
+top-5000 pairs in the same FF12 sector (%),31.2,24.9

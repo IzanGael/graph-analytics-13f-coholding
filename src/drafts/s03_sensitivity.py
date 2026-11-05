@@ -1,9 +1,18 @@
-"""Step 3: compare graph recipes so that the final filter is chosen on evidence.
+"""DRAFT, NOT PART OF THE PIPELINE AND NEVER RUN. Written before the design decisions of 5 Nov 2026: it still uses the
+superseded 10-200 manager rule and the old chance model. Kept for reference until it is rewritten.
+
+Step 3: compare graph recipes so that the final filter is chosen on evidence.
 
 For each recipe on the main quarter: size, connectivity, modularity, seed stability, how strongly
 degree still follows popularity, agreement with the baseline partition, and persistence versus the
 previous quarter. Output: results/sensitivity.csv
 """
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # shared modules live in src/
+
 from itertools import combinations
 
 import networkx as nx
@@ -11,7 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 
-import graphlib as gl
+import gutils as gl
 from config import MAIN_QUARTER, QUARTERS, RESULTS
 
 BASE = dict(n=1000, low=10, high=200, method="knn", top_k=15, z_min=3.0)

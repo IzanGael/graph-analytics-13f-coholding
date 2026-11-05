@@ -18,7 +18,8 @@ def issuer_map():
 
 def load_positions(quarter):
     """One row per manager-issuer pair, with reported value summed across share classes."""
-    h = pd.read_parquet(INTERIM / f"holdings_{quarter}.parquet", columns=["CIK", "CUSIP", "VALUE"])
+    h = pd.read_parquet(INTERIM / f"holdings_{quarter}.parquet", columns=["CIK", "CUSIP", "VALUE", "VALUE_RELIABLE"])
+    h["VALUE"] = h["VALUE"].where(h["VALUE_RELIABLE"], 0)   # inflated filers keep links, not value
     h["ISSUER"] = h["CUSIP"].str[:6]
     return h.groupby(["CIK", "ISSUER"], as_index=False)["VALUE"].sum()
 
@@ -60,6 +61,52 @@ def shared_holder_z(p, uni):
     np.fill_diagonal(z, 0)
     np.fill_diagonal(C, 0)
     return C, z, k, m
+
+
+def solve_bicm(k, n, iters=3000, tol=1e-7):
+    """Bipartite configuration model: p_im = x_i y_m / (1 + x_i y_m) with x, y chosen so that the expected
+    stock degrees equal k and the expected manager degrees equal n. Returns P, iterations, max degree errors."""
+    if (k <= 0).any() or (n <= 0).any():
+        raise ValueError("solve_bicm needs every stock and manager to have at least one link")
+    E = k.sum()
+    x, y = k / np.sqrt(E), n / np.sqrt(E)
+    for it in range(iters):
+        D = 1.0 + np.outer(x, y)
+        x_new = k / (y[None, :] / D).sum(axis=1)
+        y_new = n / (x[:, None] / D).sum(axis=0)
+        gap = max(np.abs(x_new / x - 1).max(), np.abs(y_new / y - 1).max())
+        x, y = x_new, y_new
+        if gap < tol:
+            break
+    P = np.outer(x, y)
+    P = P / (1.0 + P)
+    return P, it + 1, float((np.abs(P.sum(axis=1) - k) / k).max()), float((np.abs(P.sum(axis=0) - n) / n).max())
+
+
+def shared_holder_z_bicm(p, uni):
+    """Co-holding counts and z-scores under a chance model that respects stock popularity AND manager size.
+
+    Expected shared holders of i and j: sum_m p_im p_jm. Variance: sum_m q (1 - q) with q = p_im p_jm.
+    Managers holding every stock are dropped: they add the same constant to every pair.
+    """
+    size = p.groupby("CIK").size()
+    kept = size[size < len(uni)].index
+    p = p[p["CIK"].isin(kept)]
+    managers = {c: i for i, c in enumerate(p["CIK"].unique())}
+    issuers = {c: i for i, c in enumerate(uni.index)}
+    X = sp.csr_matrix((np.ones(len(p)), (p["ISSUER"].map(issuers), p["CIK"].map(managers))), shape=(len(issuers), len(managers)))
+    k = np.asarray(X.sum(axis=1)).ravel()
+    n = np.asarray(X.sum(axis=0)).ravel()
+    C = (X @ X.T).toarray().astype(float)
+    P, iters, err_k, err_n = solve_bicm(k, n)
+    expected = P @ P.T
+    P2 = P * P
+    var = np.maximum(expected - P2 @ P2.T, 1e-9)
+    z = (C - expected) / np.sqrt(var)
+    for m in (C, expected, z):
+        np.fill_diagonal(m, 0)
+    return {"C": C, "z": z, "expected": expected, "var": var, "P": P, "k": k, "n": n, "X": X, "iterations": iters,
+            "err_stock_degree": err_k, "err_manager_degree": err_n, "managers_dropped": int(len(size) - len(kept))}
 
 
 def backbone(z, C, names, method="knn", top_k=15, z_min=3.0):

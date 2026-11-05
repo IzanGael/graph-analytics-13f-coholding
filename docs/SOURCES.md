@@ -17,6 +17,10 @@ Keep this current. It feeds the data-source and code-reuse disclosures in the re
 - Fails-to-deliver files, used for CUSIP to ticker: https://www.sec.gov/files/data/fails-deliver-data/cnsfailsYYYYMM[a|b].zip
 - Company tickers, used for ticker to CIK: https://www.sec.gov/files/company_tickers.json
 - Financial Statement Data Sets 2026 Q2 (`sub.txt`), used for CIK to SIC: https://www.sec.gov/files/dera/data/financial-statement-data-sets/2026q2.zip
+- SEC CIK lookup file (name to CIK, includes historical names): https://www.sec.gov/Archives/edgar/cik-lookup-data.txt
+- SEC submissions API (SIC per CIK): https://data.sec.gov/submissions/CIK##########.json
+- OpenFIGI mapping API (CUSIP to ticker and security type): https://api.openfigi.com/v3/mapping
+- Fama-French industry definitions (Siccodes12, Siccodes48): Kenneth R. French data library, https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
 - Terms of reuse: not yet checked. The readme carries an accuracy disclaimer but no licence.
 - SEC rejects automated requests without a contact in the User-Agent header (HTTP 403). Download scripts must read the contact from an environment variable, so that no address is committed to the repository.
 

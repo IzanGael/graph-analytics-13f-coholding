@@ -29,10 +29,11 @@ FUND_NAME = re.compile(r"\b(ETF|ETN|ISHARES|SPDR|PROSHARES|INVESCO QQQ|SELECT SE
 def candidates():
     frames = []
     for quarter in QUARTERS:
-        h = pd.read_parquet(INTERIM / f"holdings_{quarter}.parquet", columns=["CUSIP", "NAMEOFISSUER", "VALUE"])
+        h = pd.read_parquet(INTERIM / f"holdings_{quarter}.parquet", columns=["CUSIP", "NAMEOFISSUER", "VALUE", "VALUE_RELIABLE"])
+        h["VALUE"] = h["VALUE"].where(h["VALUE_RELIABLE"], 0)
         h["ISSUER"] = h["CUSIP"].str[:6]
         by_cusip = h.groupby(["ISSUER", "CUSIP"], as_index=False)["VALUE"].sum()
-        name = h.groupby("ISSUER")["NAMEOFISSUER"].agg(lambda s: s.value_counts().index[0])
+        name = h.groupby("ISSUER")["NAMEOFISSUER"].agg(lambda s: s.value_counts().index[0] if s.notna().any() else "")
         top = by_cusip.groupby("ISSUER")["VALUE"].sum().nlargest(CANDIDATES_PER_QUARTER)
         primary = by_cusip.sort_values("VALUE").drop_duplicates("ISSUER", keep="last").set_index("ISSUER")["CUSIP"]
         frames.append(pd.DataFrame({"ISSUER": top.index, "CUSIP": primary.reindex(top.index).values,

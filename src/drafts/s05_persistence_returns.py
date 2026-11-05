@@ -1,9 +1,18 @@
-"""Step 5: do communities persist, and do they predict next-quarter co-movement better than sectors?
+"""DRAFT, NOT PART OF THE PIPELINE AND NEVER RUN. Written before the design decisions of 5 Nov 2026: it still uses the
+superseded 10-200 manager rule and the old chance model. Kept for reference until it is rewritten.
+
+Step 5: do communities persist, and do they predict next-quarter co-movement better than sectors?
 
 Each quarter t builds its own universe and communities from holdings at t only. Returns come from
 t to t+1, using prices implied by the filings (value / shares), so there is no look-ahead.
 Outputs in results/: persistence.csv, return_variance.csv, pair_gaps.csv, return_cleaning.csv
 """
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # shared modules live in src/
+
 from itertools import combinations
 
 import networkx as nx
@@ -11,7 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score
 
-import graphlib as gl
+import gutils as gl
 from config import N_ISSUERS, QUARTERS, RECIPE, RESULTS, SEED
 
 rng = np.random.default_rng(SEED)
