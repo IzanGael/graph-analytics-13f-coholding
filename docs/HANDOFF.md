@@ -1,6 +1,6 @@
-# Handoff for a new chat (written Thu 5 Nov 2026, evening)
+# Handoff for a new chat (updated Fri 6 Nov 2026, afternoon)
 
-You are taking over a master's course project mid-way. Read this file first, then do the **independent audit** described in section 9 **before** any new work.
+You are taking over a master's course project mid-way. Read this file first, then `docs/STATUS.md` (its last section is the current state). The independent audit (section 9) was done on 5 Nov; its findings are in STATUS and in the sections below.
 
 ## 1. The project in two lines
 Graph Analytics (Albert School x Mines, 2026). Build a stock co-holding network from SEC Form 13F filings and test whether groups of stocks formed by shared investors differ from official sectors, persist over time, and predict co-movement better than sectors do.
@@ -24,7 +24,7 @@ Required content per the instructions: data source and whether existing code was
 4. `src/` pipeline (run order in README), `src/gutils.py` shared maths, `src/config.py` settings, `tests/test_gutils.py`, `src/exploration/` one-off diagnostics, `src/drafts/` old scripts never run.
 5. `results/` tables, `figures/` charts, `notebooks/` two EDA notebooks, `data/manual_overrides.csv` reviewed company matches.
 
-**Data is not in the repo.** On Izan's laptop it is in `data/raw` (SEC ZIPs) and `data/interim` (cleaned parquet, graphs). A 0.72 GB bundle of the cleaned data was built in `export/` (ignored by git) for Google Drive folder https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7 ; **Izan still has to upload the zip and set sharing**.
+**Data is not in the repo.** On Izan's laptop it is in `data/raw` (SEC ZIPs) and `data/interim` (cleaned parquet, graphs). A bundle of the cleaned data (`export/processed_13f_2021Q4-2026Q2.zip`, about 737 MB, with `export/MANIFEST.txt`, built 6 Nov after the rebuild and verified) is ignored by git. It is uploaded at https://drive.google.com/file/d/1K8UPFQDs8XA4jv1i86lP-VDyOBAldtag/view?usp=sharing (Izan, 6 Nov; sharing not yet tested logged out) and in Google Drive folder https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7 ; the 5 Nov zip was replaced by the 6 Nov build (Izan uploaded it). Sharing still needs checking.
 
 ## 4. What has been done, in order
 1. Compared two topics (World Bank contracts, rejected; SEC 13F, chosen) with a feasibility test of both.
@@ -40,6 +40,14 @@ Required content per the instructions: data source and whether existing code was
    - **Main graph built for all 19 quarters** (`src/s04_build_graphs.py`, `results/graph_summary.csv`, `figures/f9_graph_over_time.png`): 1,000 stocks, 9,500-10,100 links, 903-939 stocks in the biggest connected group, 49-82 isolated stocks, 87-93% of stocks and about two thirds of links persist to the next quarter.
    - EDA: top 1,000 stocks hold 92% of the money; managers with 10-200 positions hold only 9.5% of the money (this rule was dropped).
 
+7. **Rebuild, 6 Nov (current state, supersedes item 6 where they differ):**
+   - Filings: the pipeline now uses RESTATEMENT amendments in place of the original, and adds NEW HOLDINGS positions (`filing_chain` in `s01`). JPMorgan 2026Q1 now has 31,365 positions, $1.47tn (was 239, $1.1bn).
+   - Sectors: Barrick, AvalonBay and Exact Sciences corrected by hand against SEC records (a ticker mix-up gave them other companies' sectors). A stock needs at least 50 managers (`MIN_HOLDERS` in `config.py`).
+   - 2026Q2 main graph (after the Exxon merge): 1,000 stocks, 8,226 managers, 10,134 links, 934 in the biggest group, 47 with no link, 54 groups. 2021Q4: 9,588 links, 79 with no link. Quarter to quarter: 87-93% of stocks stay; about half the links reappear.
+   - The 40 big manager-quarter row drops from the earlier scan are down to 32; 8 were explained by amendments, the rest not yet.
+   - ExxonMobil listings merged into one company (`ISSUER_ALIASES`, `config.py`), 6 Nov. Numbers below may move slightly after that rebuild; check STATUS for the latest.
+   - `s03a`, `s03b` and `s03c` were rerun on 6 Nov on the rebuilt data; their results and figures f7, f8 are current. After the Exxon merge they were rerun again: 17.3% of pairs z > 3 and 20.4% z < -3, links 7,069 / 10,134 / 16,004 for k = 10 / 15 / 25, modularity 0.64 / 0.62 / 0.58, NMI with sectors 0.15 / 0.14 / 0.11, 47 isolated stocks in each.
+
 ## 5. How we work (rules, keep them)
 - **One step at a time, then stop for Izan's decision.** Never chain steps or finish a full stage alone.
 - After each step give a **short recap in very simple words**: what was done, the results, a **graph shown in the chat** when a picture explains better than numbers, then the decision with 2-3 options and trade-offs and your recommendation. Explain technical terms the first time. Izan wants to learn and decide, and asked for short, concise, human replies.
@@ -51,7 +59,7 @@ Required content per the instructions: data source and whether existing code was
 - Windows, PowerShell, Python 3.11, packages in `requirements.txt`. Use `python -W ignore`. Long jobs go in the background. A stray folder `undefined/` created by a plugin sits in the project root and the parent folder; it is ignored locally through `.git/info/exclude` (not in the repo); do not delete or commit it.
 
 ## 6. What is left, in suggested order
-1. **Audit first** (section 9), then agree the plan with Izan.
+1. Izan uploaded the new zip to Drive (6 Nov); test the link logged out. `s03a`, `s03b`, `s03c` are already rerun.
 2. Required measures on the main graph, per quarter and for 2026Q2 in detail: connectivity and components, **diameter and radius** (decide convention: hops vs weighted distance; per component vs the largest connected group; the graph is undirected, simple, weighted by z), degree/strength, betweenness, closeness, eigenvector, PageRank, core-periphery (k-core). Decide how to read centralities given they track popularity partly. The 49 isolated stocks: who are they?
 3. **Communities**: Louvain (with several seeds) and label propagation; modularity; stability across seeds; interpret by sector, by size tier, and by top names. Compare with Fama-French sectors (NMI/ARI with a shuffled-label baseline) and with size tiers.
 4. **Persistence**: do communities of quarter t reappear at t+1 (ARI on common stocks)? Compare with a null.
@@ -62,7 +70,7 @@ Required content per the instructions: data source and whether existing code was
 9. Housekeeping: upload the Drive zip and set sharing, test the README link logged out; check SEC reuse terms; verify citations (cited from memory so far: Newman 2001 weights, Saracco et al. 2015/2017 bipartite configuration model, Blondel et al. 2008 Louvain, Raghavan et al. 2007 label propagation, Tumminello et al. 2011); decide public or private for the repo; **delete `CLAUDE.md` before submission** (Izan's request; it stays in git history unless history is rewritten or the repo recreated; decide how); finish the README; keep logs current.
 
 ## 7. Known weaknesses and open doubts (from our own review; probe these)
-- Thresholds in the value flags (5x own median, 5x neighbours, 2x price, 20% of value) were never tuned; Bank of Montreal (price rule, many quarters) and JPMorgan 2026Q2 (spike, $1.7tn) may be false flags. No outside check of quarterly totals against published market values.
+- Thresholds in the value flags (5x own median, 5x neighbours, 2x price, 20% of value) were never tuned; Bank of Montreal (price rule, many quarters) may be a false flag. JPMorgan 2026Q2 ($1.7tn, spike rule) is its real full filing and is not flagged by the median rule; the spike flag is still unexamined. No outside check of quarterly totals against published market values.
 - 27 fuzzy company matches were not individually verified; FIGI fallback tickers could collide with unrelated US tickers (unchecked); coverage statistics are computed on the top 1,000 non-funds while the graph takes the top 1,000 operating names, so big unmapped issuers (First Republic) drop out silently.
 - Survivorship: the universe is re-ranked each quarter and unmapped names skew to acquired companies (improved a lot by name matching, not eliminated).
 - The z-score heavy tails (37% of pairs beyond +-3) mean the chance model leaves lots of structure; some of it is manager style by market cap. Does the project answer "different from sectors" or just "different from size"? Needs a size control.
@@ -73,12 +81,13 @@ Required content per the instructions: data source and whether existing code was
 - Solver for the chance model is stopped by an iteration cap (8,000), with relative degree error below 0.009% in every quarter.
 
 ## 8. Environment facts
-- Run order and timings are in `README.md`. Rebuild from raw ZIPs takes about 20 minutes plus about 30 minutes for a first OpenFIGI/SEC mapping run (cached afterwards).
-- `src/s04_build_graphs.py` takes about 10-15 minutes for 19 quarters and writes graphs under `data/interim/graphs/`.
-- If the data folders are missing (new machine), download the Drive bundle (once uploaded) into `data/interim/` or rerun `s01` onwards.
+- Run order and timings are in `README.md`. The full rebuild on 6 Nov took about 15 min (`s01`), 8 min (`s01b`), 3 min (`s02`, cached) and 15 min (`s04`).
+- `src/s04_build_graphs.py` writes graphs under `data/interim/graphs/`.
+- If the data folders are missing (new machine), download the Drive bundle (once replaced) into `data/interim/` or rerun `s01` onwards.
+- Backups from 6 Nov are in `data/interim/backup_*` (local only). Delete only after Izan confirms.
 
-## 9. Your first task: an unbiased audit
-Before touching anything, read the course documents again and the whole repo, then give Izan a **short, ranked report** of:
+## 9. The independent audit (done 5-6 Nov; kept for reference)
+The audit was run before new work. Its ranked findings, with what was fixed and what was not, are recorded in `docs/STATUS.md` (audit fixes 1 and 2). The brief was:
 1. **Mistakes**: wrong code, wrong maths, wrong claims, misread data, reversed labels, anything that would change a number or a conclusion. Give file and line or the exact figure, the evidence, and a concrete failure scenario. Distinguish what you verified (by running or reading) from what you suspect.
 2. **Big improvements**: design choices that would make the project more meaningful, more defensible, or cheaper in the time left (for example: is the question truly answerable with this data and graph? is there a simpler or stronger design? is a size control missing? are the centrality and community choices appropriate? is the Neo4j option worth anything here?). Be critical of our decisions and of the numbers in this file; several were written under time pressure.
 3. **Gaps against the assignment**: any required item in the instructions or the template that we are not yet covering, and any rule we might break (disclosures, citations, page limit, defense format).

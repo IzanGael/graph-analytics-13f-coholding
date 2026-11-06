@@ -66,6 +66,12 @@ Last updated: 4 Nov 2026.
 - All 19 quarters rebuilt from the ZIPs (`s01`, then `s01b`, `s02`, `s03a`), all exit 0. The median fix settled in 3 passes (32,957 rows, then 26, then 0). Quarterly reliable totals, mapping coverage (96.3% to 99.3%) and the null-test numbers reproduced the earlier incrementally built dataset exactly, so the earlier faulty runs left no material trace. Backup of the pre-rebuild data kept locally in `data/interim/backup_before_fixedpoint`.
 - No automated tests exist; the evidence is that the whole pipeline runs end to end from raw ZIPs and reproduces earlier numbers.
 
+## Audit fix 1: sector errors (6 Nov 2026, approved by Izan)
+- **Cause:** when OpenFIGI had no US listing, `s02` took the ticker of a non-US listing, which can belong to another US company. 5 of 1,858 ticker matches used that route, 4 were wrong: Barrick (ABX read as Abacus), AvalonBay (AVBC as Avidia Bancorp), Exact Sciences (EXK as Endeavour Silver), and CUSIP 87236Y (read as American Tower).
+- **Applied:** Barrick (756894), AvalonBay (915912) and Exact Sciences (1124140) added to `data/manual_overrides.csv` as `hand-checked`, each CIK compared with its SEC record name. `s02` rerun. New rule `MIN_HOLDERS = 50` in `config.py`, used in `gutils.universe`: a stock with fewer holders in the quarter is not in the universe. It removes 87236Y (one filer, $16-21bn, 4 quarters) and Hershey Class B (1 holder, a duplicate of Hershey).
+- **Not done yet:** the 19 graphs and `results/graph_summary.csv` are not rebuilt, so they still contain the old labels and the two bogus nodes. Rebuild once, after the remaining audit checks (other name matches, JPMorgan 2026Q1 drop).
+- Backups: `data/interim/backup_step1/` (issuer map and overrides before the fix, local only).
+
 ## Filter 8, backbone size (decided 5 Nov, Izan: "do it")
 Main graph: each stock keeps its top 15 partners with z > 3 under the size-aware chance model, all managers, top 1,000 operating companies per quarter. Sensitivity checks: k = 10 and 25, top 500 and 2,000 stocks, Newman weights, and the old 10-200 manager rule. Set in `src/config.py` (`RECIPE`, `SENSITIVITY_K`). Reason: global cut-offs fail, and k = 15 balances readability and coverage; modularity should not be used to pick k because sparser graphs always score higher. Still to look at: who the 49 stocks with no partner are.
 
@@ -107,3 +113,33 @@ Processed-data bundle built locally in `export/` (not committed): `processed_13f
 - [ ] Complete the README reproduction steps and the data link.
 - [ ] Add the AI-use and code-reuse statements to the report, and all three names and emails.
 - [ ] Remove this file too if it should not be graded.
+
+## Audit fix 2: amended 13F filings (6 Nov 2026, approved by Izan)
+- **Cause:** `s01` kept only original `13F-HR` filings and dropped every `13F-HR/A` amendment. Some managers file a partial original and a full amendment on the same day (JPMorgan 2026 Q1: 378 rows as original, 33,063 as a RESTATEMENT). We used the partial one.
+- **Scan of 19 quarters:** 2,501 amendments for the same period. 2,141 are RESTATEMENT (replaces the whole report), 354 are NEW HOLDINGS (adds positions). 80 amendments carry more than 1.5 times the original's positions.
+- **Rule now in `s01` (`filing_chain`):** the base is the latest RESTATEMENT if there is one, otherwise the original. NEW HOLDINGS amendments filed on or after the base add positions; a position already in the base is not taken again. Among adds the latest filing wins.
+- **Test:** JPMorgan 2026 Q1 now has 31,365 rows and $1.47tn (was 239 rows and $1.1bn).
+- **Rebuild:** `s01`, `s01b`, `s02` and `s04` rerun for all 19 quarters on 6 Nov 2026, with backups in `data/interim/backup_before_amendments/` (local only). Until the rebuild finishes, numbers in this file that come from the graphs are the old ones.
+- **Not yet checked:** whether all 40 manager-quarter drops from the earlier scan are explained by amendments.
+
+## Current state after the rebuild (6 Nov 2026, afternoon)
+This section supersedes older numbers above where they differ.
+- **Rebuilt for all 19 quarters:** `s01` (with amendment rule), `s01b`, `s02`, `s04`, `s04b`. All exit 0.
+- **Main graph 2026 Q2:** 1,000 stocks, 8,235 managers, 10,152 links, 934 stocks in the biggest group, 47 with no link, 53 groups. The 2021 Q4 graph has 9,588 links. Quarter to quarter: 87% to 93% of stocks stay, links Jaccard about 0.47 to 0.50.
+- **Sector mapping coverage:** 96.3% (2021 Q4) to 99.3% (2026 Q2) of the top 1,000 non-fund names.
+- **Data bundle:** `export/processed_13f_2021Q4-2026Q2.zip` (about 737 MB) with `export/MANIFEST.txt`, built and verified by extraction on 6 Nov. The old Drive file is stale and must be replaced. Izan will send the new link.
+- **Stale, not rerun:** `results/null_test.csv`, `results/tail_probe.csv`, `results/backbone_options.csv`, `figures/f7_null_calibration.png`, `figures/f8_backbone_options.png`. Need `s03a` and `s03b` rerun before any of their numbers are quoted.
+- **Amendment check:** the earlier 40 big row drops fall to 32 after the fix. The remaining 32 are not yet explained.
+- **Next, waiting for Izan's choice:** the required measures (components, diameter, radius, centralities, core-periphery), communities, persistence, returns test. Also old-file cleanup, which needs Izan's confirmation first.
+
+## Diagnostics rerun (6 Nov 2026, evening)
+`s03a`, `s03b` and `s03c` were rerun on the rebuilt data; the "Stale, not rerun" line above no longer applies, and the Drive file was replaced with the 6 Nov build (link in the README). 2026 Q2: median observed/expected 0.99; 17.6% of pairs z > 3 and 20.3% z < -3; simulated from the model the spread is 0.97 to 1.03 (real data 3.55). Backbone: top 10 / 15 / 25 give 7,083 / 10,152 / 16,035 links, modularity 0.65 / 0.62 / 0.57, NMI with sectors 0.14 / 0.14 / 0.11, 47 isolated stocks and diameter 14 in each; global z > 3 gives 87,794 links (hairball). Notebooks 01 and 02: two text cells updated (superseded 10-200 rule, fund flag).
+
+## Exxon listings merged (6 Nov 2026, approved by Izan)
+- **Problem:** ExxonMobil Holdings Corp (CUSIP 30233Q, new SEC number, 398 managers) and Exxon Mobil Corp (30231G, 3,871 managers) were two stocks in the universe. Found by comparing old and new 2026 Q2 universes.
+- **Fix:** `ISSUER_ALIASES = {"30233Q": "30231G"}` in `config.py`, applied in `gutils.load_positions`. Combined: 4,257 managers (12 hold both). Universe is still 1,000 stocks; Exxon takes one slot.
+- **Check on the comparison:** old vs new 2026 Q2 graphs before this fix: universe 996 of 1,000 the same; links among common stocks 94% the same; communities 88% the same (ARI); overlap with sectors 0.146 to 0.137; overlap with size 0.29 unchanged. The "old" side in that comparison used the pre-fix holdings and sector map with the new 50-holder rule.
+- **Rebuild:** `s04`, `s04b`, `s03a`, `s03b`, `s03c` rerun after this fix. Holdings files and the export zip are unchanged (the alias is applied in code), so the 6 Nov zip stays valid.
+
+## Final numbers after the Exxon merge (6 Nov 2026, evening)
+These supersede the earlier numbers in this file. 2026 Q2 main graph: 1,000 stocks, 8,226 managers, 10,134 links, 934 stocks in the biggest group, 47 with no link, 54 groups. 2021 Q4 is unchanged (9,588 links). Top 10 / 15 / 25: 7,069 / 10,134 / 16,004 links, modularity 0.64 / 0.62 / 0.58, NMI with sectors 0.15 / 0.14 / 0.11. Chance model: median observed/expected 0.99, 17.3% of pairs z > 3, 20.4% z < -3. Tests: 4 of 4 pass. Rerun of `s04`, `s04b`, `s03a`, `s03b`, `s03c` exit 0.

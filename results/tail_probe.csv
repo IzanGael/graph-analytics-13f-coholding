@@ -1,5 +1,5 @@
 what,share z>3 (%),share z<-3 (%),sd of z,table
-real data,17.35,20.39,3.46,bootstrap
-"simulated from the model, draw 1",0.17,0.11,1.01,bootstrap
-"simulated from the model, draw 2",0.24,0.07,1.01,bootstrap
-"simulated from the model, draw 3",0.13,0.12,1.01,bootstrap
+real data,17.31,20.39,3.45,bootstrap
+"simulated from the model, draw 1",0.14,0.11,1.01,bootstrap
+"simulated from the model, draw 2",0.22,0.19,1.01,bootstrap
+"simulated from the model, draw 3",0.12,0.19,1.0,bootstrap

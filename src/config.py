@@ -33,6 +33,10 @@ QUARTERS = {
 MAIN_QUARTER = "2026Q2"
 
 N_ISSUERS = 1000          # operating companies ranked by total reported value
+MIN_HOLDERS = 50          # a stock held by fewer managers in the quarter is not in the universe (decided 5 Nov 2026)
+# Two listings of one company, counted as one issuer (decided 6 Nov 2026, Izan: merge). ExxonMobil Holdings Corp (2026
+# reorganisation, own SEC number) replaces Exxon Mobil Corp (CUSIP 30231G). Keys and values are 6-character issuer codes.
+ISSUER_ALIASES = {"30233Q": "30231G"}
 SEED = 42
 
 # Graph recipe decided 5 Nov 2026 (see docs/STATUS.md): all managers, size-aware chance model

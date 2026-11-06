@@ -1,7 +1,8 @@
 """Step 1: download the quarterly 13F releases and keep long share positions in compact files.
 
-Filters: original 13F-HR filings for the release's main report period; no options; shares only;
-positive value. Amendments and late filings are excluded so that each quarter is one snapshot.
+Filters: for each manager and report period, the filing chain is the original 13F-HR, replaced by its latest
+RESTATEMENT amendment (13F-HR/A) when one exists; NEW HOLDINGS amendments filed after that base add their positions
+(a position already in the base is not duplicated). No options; shares only; positive value.
 Output: data/interim/holdings_<quarter>.parquet and a per-quarter log in results/.
 """
 import http.client
@@ -81,6 +82,27 @@ def fix_units(info):
     return value, int(too_big.sum()), int(too_small.sum())
 
 
+def filing_chain(filings):
+    """Which filings make up each manager's report for the period.
+
+    Base: the latest RESTATEMENT amendment if there is one (it replaces the whole original report), otherwise
+    the latest original 13F-HR. Adds: NEW HOLDINGS amendments filed on or after the base (they add positions).
+    A position already in the base is not taken again from an add; among adds the latest filing wins.
+    Returns the chain (one row per filing used, with a role column) and counts for the log.
+    """
+    key = ["_filed", "ACCESSION_NUMBER"]
+    original = filings[filings["SUBMISSIONTYPE"] == "13F-HR"].sort_values(key).drop_duplicates("CIK", keep="last")
+    restated = (filings[(filings["SUBMISSIONTYPE"] == "13F-HR/A") & (filings["AMENDMENTTYPE"] == "RESTATEMENT")]
+                .sort_values(key).drop_duplicates("CIK", keep="last"))
+    base = pd.concat([original[~original["CIK"].isin(restated["CIK"])], restated]).assign(role="base")
+    new = filings[filings["AMENDMENTTYPE"] == "NEW HOLDINGS"].merge(
+        base[["CIK", "_filed"]].rename(columns={"_filed": "_base_filed"}), on="CIK")
+    new = new[new["_filed"] >= new["_base_filed"]].drop(columns="_base_filed").assign(role="add")
+    chain = pd.concat([base, new], ignore_index=True)
+    log = {"managers_restated": int(restated["CIK"].nunique()), "new_holdings_filings_used": int(new["ACCESSION_NUMBER"].nunique())}
+    return chain, log
+
+
 def extract(path, period):
     with zipfile.ZipFile(path) as z:
         # Some releases keep the tables at the archive root, others inside a dated subfolder
@@ -88,17 +110,23 @@ def extract(path, period):
         with z.open(member["SUBMISSION.tsv"]) as fh:
             sub = pd.read_csv(fh, sep="\t", dtype=str)
         with z.open(member["COVERPAGE.tsv"]) as fh:
-            cover = pd.read_csv(fh, sep="\t", dtype=str, usecols=["ACCESSION_NUMBER", "FILINGMANAGER_NAME"])
+            cover = pd.read_csv(fh, sep="\t", dtype=str, usecols=["ACCESSION_NUMBER", "FILINGMANAGER_NAME", "AMENDMENTTYPE"])
         with z.open(member["INFOTABLE.tsv"]) as fh:
             info = pd.read_csv(fh, sep="\t", dtype=str,
                                usecols=["ACCESSION_NUMBER", "NAMEOFISSUER", "TITLEOFCLASS", "CUSIP", "VALUE",
                                         "SSHPRNAMT", "SSHPRNAMTTYPE", "PUTCALL"])
-    keep = sub[(sub["PERIODOFREPORT"] == period) & (sub["SUBMISSIONTYPE"] == "13F-HR")]
-    # A manager filing twice for the period keeps its largest accession number (the latest one)
-    # The latest filing wins; the accession prefix identifies the filing agent, so it cannot order filings by itself
-    keep = keep.assign(_filed=pd.to_datetime(keep["FILING_DATE"], format="%d-%b-%Y")).sort_values(["_filed", "ACCESSION_NUMBER"]).drop_duplicates("CIK", keep="last")
-    info = info.merge(keep[["ACCESSION_NUMBER", "CIK", "FILING_DATE"]], on="ACCESSION_NUMBER")
-    log = {"filings": len(keep), "rows_all": len(info)}
+    filings = sub[(sub["PERIODOFREPORT"] == period) & sub["SUBMISSIONTYPE"].isin(["13F-HR", "13F-HR/A"])]
+    filings = filings.merge(cover, on="ACCESSION_NUMBER", how="left")
+    filings = filings.assign(_filed=pd.to_datetime(filings["FILING_DATE"], format="%d-%b-%Y"))
+    chain, chain_log = filing_chain(filings)
+    info = info.merge(chain[["ACCESSION_NUMBER", "CIK", "FILING_DATE", "_filed", "role"]], on="ACCESSION_NUMBER")
+    base_rows = info[info["role"] == "base"]
+    add_rows = info[info["role"] == "add"]
+    # Positions added by NEW HOLDINGS: skip any already in the base; across adds keep the latest filing
+    add_rows = add_rows[~add_rows.set_index(["CIK", "CUSIP"]).index.isin(base_rows.set_index(["CIK", "CUSIP"]).index)]
+    add_rows = add_rows[add_rows["_filed"] == add_rows.groupby(["CIK", "CUSIP"])["_filed"].transform("max")]
+    info = pd.concat([base_rows, add_rows], ignore_index=True)
+    log = {"filings": int(chain["ACCESSION_NUMBER"].nunique()), "rows_all": len(info), **chain_log, "rows_added_new_holdings": len(add_rows)}
     info = info[info["PUTCALL"].isna() & (info["SSHPRNAMTTYPE"] == "SH")].copy()
     info["VALUE"] = pd.to_numeric(info["VALUE"], errors="coerce")
     # SEC readme: value is in dollars from 3 Jan 2023 and in thousands of dollars before that
@@ -119,7 +147,7 @@ def extract(path, period):
     log["rows_long_shares"] = len(info)
     log["managers"] = info["CIK"].nunique()
     log["cusips"] = info["CUSIP"].nunique()
-    managers = keep.merge(cover, on="ACCESSION_NUMBER")[["CIK", "FILINGMANAGER_NAME"]]
+    managers = chain[["CIK", "FILINGMANAGER_NAME"]].drop_duplicates("CIK", keep="last")
     return info[["CIK", "CUSIP", "NAMEOFISSUER", "TITLEOFCLASS", "VALUE", "SHARES"]], managers, log
 
 

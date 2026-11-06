@@ -36,3 +36,6 @@ Python 3.11.9, NetworkX 3.6.1, pandas 2.2.3, NumPy 2.4.6, SciPy 1.15.2, scikit-l
 - Label propagation: Raghavan, Albert and Kumara (2007), as cited in Lecture 4; `networkx.community.asyn_lpa_communities`.
 - PageRank: Brin and Page (1998), as cited in Lecture 3; `networkx.pagerank`.
 - Adjusted Rand index and normalised mutual information: scikit-learn implementations. Add the primary references.
+
+## Filing rules used (6 Nov 2026)
+- The SEC 13F readme (https://www.sec.gov/files/form_13f_readme.pdf) defines `AMENDMENTTYPE` in the cover page data: RESTATEMENT replaces the report, NEW HOLDINGS adds positions. `s01` follows that reading. Check the exact wording in the readme before the report is written.

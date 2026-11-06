@@ -9,7 +9,7 @@ import pandas as pd
 import scipy.sparse as sp
 import networkx as nx
 
-from config import INTERIM, N_ISSUERS
+from config import INTERIM, ISSUER_ALIASES, MIN_HOLDERS, N_ISSUERS
 
 
 def issuer_map():
@@ -20,15 +20,16 @@ def load_positions(quarter):
     """One row per manager-issuer pair, with reported value summed across share classes."""
     h = pd.read_parquet(INTERIM / f"holdings_{quarter}.parquet", columns=["CIK", "CUSIP", "VALUE", "VALUE_RELIABLE"])
     h["VALUE"] = h["VALUE"].where(h["VALUE_RELIABLE"], 0)   # inflated filers keep links, not value
-    h["ISSUER"] = h["CUSIP"].str[:6]
+    h["ISSUER"] = h["CUSIP"].str[:6].replace(ISSUER_ALIASES)
     return h.groupby(["CIK", "ISSUER"], as_index=False)["VALUE"].sum()
 
 
 def universe(positions, imap, n=N_ISSUERS):
-    """Largest operating companies by total reported value in this quarter."""
+    """Largest operating companies by total reported value in this quarter, held by at least MIN_HOLDERS managers."""
     total = positions.groupby("ISSUER")["VALUE"].sum().sort_values(ascending=False)
+    holders = positions.groupby("ISSUER")["CIK"].nunique()
     operating = imap.index[imap["operating"]]
-    total = total[total.index.isin(operating)].head(n)
+    total = total[total.index.isin(operating) & (holders.reindex(total.index) >= MIN_HOLDERS)].head(n)
     u = imap.loc[total.index, ["NAME", "ticker", "sic", "sic2", "sic_desc", "ff12", "ff48"]].copy()
     u["value"] = total
     return u
