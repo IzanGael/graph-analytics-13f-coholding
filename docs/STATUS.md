@@ -143,3 +143,6 @@ This section supersedes older numbers above where they differ.
 
 ## Final numbers after the Exxon merge (6 Nov 2026, evening)
 These supersede the earlier numbers in this file. 2026 Q2 main graph: 1,000 stocks, 8,226 managers, 10,134 links, 934 stocks in the biggest group, 47 with no link, 54 groups. 2021 Q4 is unchanged (9,588 links). Top 10 / 15 / 25: 7,069 / 10,134 / 16,004 links, modularity 0.64 / 0.62 / 0.58, NMI with sectors 0.15 / 0.14 / 0.11. Chance model: median observed/expected 0.99, 17.3% of pairs z > 3, 20.4% z < -3. Tests: 4 of 4 pass. Rerun of `s04`, `s04b`, `s03a`, `s03b`, `s03c` exit 0.
+
+## Cleanup (6 Nov 2026, evening)
+Deleted, local only: `data/interim/backup_before_amendments`, `backup_before_fixedpoint`, `backup_step1`, `issuer_map_before_overrides.parquet`, `issuer_map_before_six.parquet`, and `export/stage`. Kept: raw ZIPs, rebuilt `data/interim`, `export/processed_13f_2021Q4-2026Q2.zip` with `MANIFEST.txt`, `src/drafts/`, `feasibility/`, `CLAUDE.md`. Earlier mentions of these backups in this file are no longer valid.

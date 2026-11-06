@@ -84,7 +84,7 @@ Required content per the instructions: data source and whether existing code was
 - Run order and timings are in `README.md`. The full rebuild on 6 Nov took about 15 min (`s01`), 8 min (`s01b`), 3 min (`s02`, cached) and 15 min (`s04`).
 - `src/s04_build_graphs.py` writes graphs under `data/interim/graphs/`.
 - If the data folders are missing (new machine), download the Drive bundle (once replaced) into `data/interim/` or rerun `s01` onwards.
-- Backups from 6 Nov are in `data/interim/backup_*` (local only). Delete only after Izan confirms.
+- The backups from 5-6 Nov were deleted on 6 Nov (about 1.7 GB) because the rebuilt data replaced them. Everything can be rebuilt from the raw ZIPs (see README).
 
 ## 9. The independent audit (done 5-6 Nov; kept for reference)
 The audit was run before new work. Its ranked findings, with what was fixed and what was not, are recorded in `docs/STATUS.md` (audit fixes 1 and 2). The brief was:
