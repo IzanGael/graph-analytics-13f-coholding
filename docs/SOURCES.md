@@ -39,3 +39,10 @@ Python 3.11.9, NetworkX 3.6.1, pandas 2.2.3, NumPy 2.4.6, SciPy 1.15.2, scikit-l
 
 ## Filing rules used (6 Nov 2026)
 - The SEC 13F readme (https://www.sec.gov/files/form_13f_readme.pdf) defines `AMENDMENTTYPE` in the cover page data: RESTATEMENT replaces the report, NEW HOLDINGS adds positions. `s01` follows that reading. Check the exact wording in the readme before the report is written.
+
+## Regime and conviction extension (8 Nov 2026)
+- Macro regimes: defined by the team from inflation, growth, real rates, stock-bond correlation, VIX and credit spreads; dates approximate. Sources still to add (FRED series: CPIAUCSL, PCEPILFE, DFII10, VIXCLS, BAMLH0A0HYM2).
+- Relative overweight follows the idea of active weights against a market benchmark; related measure "active share": Cremers and Petajisto (2009), cited from memory, to verify.
+- Change-point segmentation by dynamic programming and permutation tests: standard methods, implemented for this project.
+- Returns are computed from the 13F filings themselves (no external price data).
+- No code was copied from the internet; all scripts in `src/regimes/` were written for this project with AI assistance.

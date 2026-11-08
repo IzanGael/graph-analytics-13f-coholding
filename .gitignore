@@ -3,3 +3,9 @@ data/interim/
 export/
 __pycache__/
 *.pyc
+
+# Regime / conviction extension: regenerable caches and raw downloads
+data/download/
+results/regimes/**/*.pkl
+results/regimes/**/*.parquet
+results/regimes/**/*.log
