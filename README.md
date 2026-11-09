@@ -54,7 +54,10 @@ Notebooks in `notebooks/` explore the data (01 managers, 02 stocks) and need ste
 ## Layout
 - `src/` pipeline scripts, shared helpers in `gutils.py`, settings in `config.py`
 - `src/exploration/` one-off diagnostics used to find and check data problems
-- `src/drafts/` older scripts, never run and not part of the pipeline (they will be rewritten or removed)
+- `src/drafts/` old drafts, never run and not part of any result (see `src/drafts/README.md`)
+- `src/regimes/` regime tests, conviction graph, graph measures and co-movement test (see the section above)
+- `neo4j/` the Neo4j demo used for the oral defense (visualisation only)
+- `report/` the written report: LaTeX source on the course template, `biblio.bib`, figures (`make_figures.py`) and the compiled PDF
 - `feasibility/` the topic-selection tests, including the rejected World Bank topic
 - `notebooks/`, `figures/`, `results/`, `docs/` (sources, AI use, project status)
 

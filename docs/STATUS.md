@@ -105,14 +105,16 @@ The three agreed fixes are built into `s01` and all 19 quarters rebuilt. Totals 
 Processed-data bundle built locally in `export/` (not committed): `processed_13f_2021Q4-2026Q2.zip`, 0.72 GB, 40 files, extraction verified identical, plus `MANIFEST.txt` with SHA-256 hashes. Drive folder created in Izan's account with the manifest inside: https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7 . **Open:** Izan must upload the zip into that folder by hand (the Drive connector cannot carry 0.7 GB), then set sharing so graders can open it (the folder is private right now), and the README link must be tested while logged out.
 
 ## Before submission
-- [ ] Upload `export/processed_13f_2021Q4-2026Q2.zip` to the Drive folder, set sharing, test the link logged out.
-- [ ] **Delete `CLAUDE.md` from the repo** (requested by Izan). It would remain in the git history unless the history is rewritten or the repo is recreated, so decide how to handle that.
+- [x] Upload `export/processed_13f_2021Q4-2026Q2.zip` to the Drive folder, set sharing, test the link logged out (the zip downloads without login, checked 7 Nov).
+- [ ] Replace `MANIFEST.txt` on the Drive: the current one is from 5 Nov and its hashes do not match the 6 Nov zip (new file prepared by Oussama, Izan uploads it).
+- [x] **Delete `CLAUDE.md` from the repo** (requested by Izan; done in the report-and-cleanup PR). It remains in the git history.
 - [x] Teacher's written confirmation that a group of three is allowed: Izan reports it is done (5 Nov); the instructions PDF says two.
-- [ ] Invite Oussama and Ryan to the repo (Izan is doing this).
-- [ ] Settle repo visibility and check that the link works for someone logged out or invited.
-- [ ] Complete the README reproduction steps and the data link.
-- [ ] Add the AI-use and code-reuse statements to the report, and all three names and emails.
-- [ ] Remove this file too if it should not be graded.
+- [x] Invite Oussama and Ryan to the repo.
+- [ ] Settle repo visibility (private today) and check that the link works for the teacher, invited or logged out (Izan).
+- [x] Complete the README reproduction steps and the data link (pipeline, `src/regimes/`, `neo4j/`, `report/`).
+- [x] Add the AI-use and code-reuse statements to the report, and all three names and emails (`report/written-report.tex`, section 3.5).
+- [ ] Submit `report/written-report.pdf` on Inside before Tue 10 Nov 08:00.
+- [ ] Decide whether `src/drafts/` is deleted (now flagged as unused) and whether this file stays in the graded repo.
 
 ## Audit fix 2: amended 13F filings (6 Nov 2026, approved by Izan)
 - **Cause:** `s01` kept only original `13F-HR` filings and dropped every `13F-HR/A` amendment. Some managers file a partial original and a full amendment on the same day (JPMorgan 2026 Q1: 378 rows as original, 33,063 as a RESTATEMENT). We used the partial one.
@@ -162,3 +164,9 @@ Deleted, local only: `data/interim/backup_before_amendments`, `backup_before_fix
 - Four saved queries in `neo4j/scenes.cypher`: (1) the 2026Q2 merger-arbitrage tribe (20 stocks, 6 funds: Prelude, Gabelli x2, LMR Partners, Verition, AQR Arbitrage/Squarepoint); (2) one stock's links (Electronic Arts, 17 neighbours with z and shared bettors); (3) all named 2026Q2 tribes, 10 key stocks each (~100 nodes), with Cheniere Energy confirmed as a loaded bridge stock (participation 0.62); (4) the same tribe in 2022Q2 (14 stocks: Activision, Twitter, Citrix, Zendesk...) vs 2026Q2 -- same core funds (Gabelli, Verition persist across both), different stocks.
 - Built by recomputing the conviction graph for just these two quarters with `neo4j/build_demo_data.py` (same method and parameters as `src/regimes/conviction_build.py`/`conviction_profiles.py`), because those scripts' intermediate caches are gitignored and were not present on this machine. The recompute reproduced the 2026Q2 tribe exactly (20 stocks, matches `centralities_conviction_2026Q2.csv` group 9) but the 2022Q2 tribe came out as 14 stocks rather than the committed profile's 16 -- Louvain/library-version sensitivity, not a pipeline change; see `docs/AI_USE.md` for detail. This demo's own graph and numbers are not used in, and do not affect, any reported result.
 - Runs on a local, user-installed Neo4j Community 5.26 (no root), auth disabled, data and queries kept local to the repo under `neo4j/`. Full detail and talking points: `neo4j/scenes.cypher`.
+
+## Report written (9 Nov 2026, Oussama)
+- `report/written-report.tex` on the course LaTeX template (sections Introduction, Dataset Presentation, Description of the Analysis, Results, Conclusions), compiled to `report/written-report.pdf`: 11 pages, no LaTeX warnings. Figures from `report/make_figures.py`.
+- All academic references checked online (Saracco 2015 and 2017, Blondel 2008, Newman 2003 and 2006, Cremers and Petajisto 2009, Hubert and Arabie 1985, Strehl and Ghosh 2002, Hagberg 2008); DOIs added in `biblio.bib`.
+- Two numbers corrected while checking: backbone z > 3 keeps 86,465 edges and z > 10 isolates 767 stocks (current `results/backbone_options.csv`); the merger-arbitrage funds present in both 2022Q2 and 2026Q2 are Gabelli, Prelude and Verition (Pentwater only in 2022).
+- Slides (Canva, not submitted) follow the same story; backup slide 15 still lists Pentwater and Millennium as common funds.
