@@ -65,3 +65,27 @@ Notebooks in `notebooks/` explore the data (01 managers, 02 stocks) and need ste
 - A 13F manager is a filing institution, not a single fund.
 - Sector labels are the SEC's industry codes, not each company's business mix (for example Amazon is labelled retail).
 - No automated tests beyond the four chance-model checks; the evidence for reliability is that the pipeline runs end to end from the raw files.
+
+## Extension: macro regimes, conviction graph and co-movement (8 Nov 2026)
+Scripts in `src/regimes/`, outputs in `results/regimes/`. They need the main graphs (`s04`) first. Run from the project folder, in this order:
+
+| Step | Command | What it does |
+|---|---|---|
+| A | `python src/regimes/regime_test.py results/graph_summary.csv results/regimes` | Links: do they change more at the 5 macro regime boundaries? |
+| B | `python src/regimes/regime_groups.py . results/regimes` | Louvain groups per quarter, 19 x 19 group similarity heatmap, boundary test |
+| C | `python src/regimes/investor_calendar.py . results/regimes` then `python src/regimes/calendar_break_test.py results/regimes` | Data-driven "investor calendar" (best cuts vs a smooth-drift baseline) and break strength per quarter |
+| D | `python src/regimes/conviction_build.py . results/regimes/conviction` | Conviction graph: stocks linked when the same managers bet on both (relative overweight > 2; checks 1.5 and 3) |
+| E | `python src/regimes/conviction_analysis.py . results/regimes` | Same regime tests on the conviction graph; ownership vs conviction, size control |
+| F | `python src/regimes/conviction_profiles.py . results/regimes/conviction 2022Q2 2026Q2` | Profiles of the bet groups ("tribes") |
+| G | `python src/regimes/graph_metrics.py . results/regimes/metrics 2026Q2` | Components, diameter, radius (largest component, hops), centralities, both graphs |
+| H | `python src/regimes/returns_13f.py . results/regimes/comovement` then `python src/regimes/comovement_test.py . results/regimes/comovement` | Quarterly returns from filings (split-adjusted) and the co-movement test |
+
+`src/regimes/conviction_probe.py <repo> <quarter>` prints the checks used to choose the overweight rule. Steps D and E take about 10 and 15 minutes.
+
+**Relative overweight:** a manager's weight in a stock divided by the weight the stock would have if the manager held its own stocks in market proportions. Above 1 the manager made it bigger than the market would; a bet is an overweight above 2.
+
+**Main results (preliminary):**
+- Macro regimes (6, defined by the team; dates approximate) do not reorganise the groups: links p = 0.61, groups p = 0.84, equal time gap p = 0.68. Groups drift slowly (similarity 0.75 after one quarter, 0.34 after 4.5 years); no data-driven cut beats smooth drift.
+- Conviction (bet) groups differ from ownership groups (ARI 0.29), are not driven by size (NMI with size 0.13 against 0.30) and drift faster, but also show no regime effect. They read as investor "tribes" (merger arbitrage, Canadian home bias, income REITs and utilities, blue-chip dividend, ADRs; new by 2026: AI hardware with biotech, midstream with private markets).
+- 2026Q2, largest component: ownership diameter 14, radius 7; conviction diameter 8, radius 5.
+- Co-movement (groups at t, returns t to t+1, 18 periods): sectors explain more than tribes (8.9% vs 5.9% above random groupings), but tribes add 3.8% on top of sectors and size (significant in 17 of 18 periods) and beat sectors in the 2022 and 2025 stress quarters.

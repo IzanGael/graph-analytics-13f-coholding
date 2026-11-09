@@ -20,3 +20,8 @@ Notes for the AI-use statement in the report. Add an entry for each use.
 
 ## 6 Nov 2026: Claude Code (model Claude Opus 5.5), amendment handling
 - Found that the pipeline dropped 13F amendments; wrote the `filing_chain` rule in `src/s01_download_13f.py` to use restatements and new-holdings amendments; tested it on 2026 Q1; reran the pipeline. Izan approved the approach.
+
+## 6-8 Nov 2026: Claude Code (model Claude Opus 5.5), regimes, conviction graph, co-movement (Oussama)
+- Summarised the repository and data structure, proposed a Neo4j graph model, and explained the methods (z-scores, Louvain, ARI) in plain terms.
+- Wrote and ran the scripts in `src/regimes/`: regime tests on links and groups, the data-driven investor calendar, the conviction graph and its tests, tribe profiles, graph measures, returns from filings and the co-movement test.
+- The students chose each step: adding regimes, reversing the approach, moving to allocations (Oussama's idea), the overweight rule and threshold, and the theme names of the bet groups. Results that went against the hypotheses are reported as such.
