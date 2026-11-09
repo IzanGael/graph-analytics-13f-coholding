@@ -7,14 +7,20 @@ Authors: Izan Gael Rooke Mora, Oussama Maaref and Ryan Ebanda.
 
 **Our question:** do the groups formed by shared investors differ from official sectors, last over time, and predict which stocks move together better than sectors do?
 
-**Status (6 Nov 2026):** the data pipeline and the graphs for all 19 quarters are built and reproducible. Centralities, communities, persistence and the returns test are still to come. The results below are preliminary.
+**Status (9 Nov 2026, final):** the analysis is complete and reproducible. **Written report: [`report/written-report.pdf`](report/written-report.pdf)** (LaTeX source in `report/`).
+
+**Main findings:**
+- Groups of stocks formed by shared investors differ from official sectors (NMI 0.13 with Fama-French sectors), but ownership groups partly reflect company size (NMI 0.30).
+- The groups persist and drift slowly; they do not reorganise at macro regime changes (permutation tests, p = 0.34 to 0.84).
+- A second graph built from managers' bets (relative overweights) reveals investor "tribes" defined by who bets on them (merger arbitrage, Canadian home bias, income, AI hardware); these are not a size effect (NMI 0.13).
+- Sectors predict next-quarter co-movement better than tribes, but tribes add significant information on top of sectors and size (17 of 18 quarters), most in stress quarters.
 
 ## Data and sources
 - **SEC Form 13F data sets**, 19 quarterly releases covering the report periods 31 Dec 2021 to 30 Jun 2026: https://www.sec.gov/dera/data/form-13f (field definitions: https://www.sec.gov/files/form_13f_readme.pdf). The SEC publishes an accuracy disclaimer and no licence; terms of reuse have not been verified yet.
 - **Sector mapping:** OpenFIGI (CUSIP to ticker and security type), SEC `company_tickers.json`, the SEC CIK lookup file and the SEC submissions API (company to SIC), and Kenneth French's Fama-French industry definitions. Full list with URLs in [docs/SOURCES.md](docs/SOURCES.md).
 - **Code reuse:** no code for these data sets was copied from the internet or from existing projects. The code was written for this project with AI assistance, see [docs/AI_USE.md](docs/AI_USE.md). Methods are cited in SOURCES.md.
 - **Raw and processed data are not in the repository** (about 1.4 GB of ZIP files and about 1.8 GB of processed files). The scripts below download and rebuild them. The reviewed list of company matches, `data/manual_overrides.csv`, is included.
-- **Processed data, ready to use (zip, about 740 MB):** [direct download link](https://drive.google.com/file/d/1K8UPFQDs8XA4jv1i86lP-VDyOBAldtag/view?usp=sharing) (file `processed_13f_2021Q4-2026Q2.zip`, built 6 Nov 2026), or the [Google Drive folder](https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7), file `processed_13f_2021Q4-2026Q2.zip`, with a `MANIFEST.txt` listing the SHA-256 hash of each file. Unzip it into `data/interim/` and skip steps 1 to 3 below. The raw SEC files are public and are not copied there.
+- **Processed data, ready to use (zip, about 740 MB):** [direct download link](https://drive.google.com/file/d/1K8UPFQDs8XA4jv1i86lP-VDyOBAldtag/view?usp=sharing) (file `processed_13f_2021Q4-2026Q2.zip`, built 6 Nov 2026), or the [Google Drive folder](https://drive.google.com/drive/folders/1KfR8t2zsmP6KvTb8sfD-eMcY95sI3sG7), file `processed_13f_2021Q4-2026Q2.zip`, with `MANIFEST_2026-11-06.txt` listing the SHA-256 hash of each file. Unzip it into `data/interim/` and skip steps 1 to 3 below. The raw SEC files are public and are not copied there.
 
 ## How to reproduce
 Python 3.11. Install the packages, then set a contact address, which the SEC requires in the User-Agent of automated requests (use your own, never commit it):

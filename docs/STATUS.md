@@ -106,14 +106,14 @@ Processed-data bundle built locally in `export/` (not committed): `processed_13f
 
 ## Before submission
 - [x] Upload `export/processed_13f_2021Q4-2026Q2.zip` to the Drive folder, set sharing, test the link logged out (the zip downloads without login, checked 7 Nov).
-- [ ] Replace `MANIFEST.txt` on the Drive: the current one is from 5 Nov and its hashes do not match the 6 Nov zip (new file prepared by Oussama, Izan uploads it).
+- [x] Replace the Drive manifest: `MANIFEST_2026-11-06.txt` uploaded by Izan (9 Nov), hashes match the 6 Nov zip.
 - [x] **Delete `CLAUDE.md` from the repo** (requested by Izan; done in the report-and-cleanup PR). It remains in the git history.
 - [x] Teacher's written confirmation that a group of three is allowed: Izan reports it is done (5 Nov); the instructions PDF says two.
 - [x] Invite Oussama and Ryan to the repo.
-- [ ] Settle repo visibility (private today) and check that the link works for the teacher, invited or logged out (Izan).
+- [x] Repo made public by Izan (9 Nov); the repo page and the report PDF open without login.
 - [x] Complete the README reproduction steps and the data link (pipeline, `src/regimes/`, `neo4j/`, `report/`).
 - [x] Add the AI-use and code-reuse statements to the report, and all three names and emails (`report/written-report.tex`, section 3.5).
-- [ ] Submit `report/written-report.pdf` on Inside before Tue 10 Nov 08:00.
+- [ ] Submit `report/written-report.pdf` on Inside before Tue 10 Nov 08:00 (12 pages after adding the 'Why this dataset' paragraph requested by Izan).
 - [ ] Decide whether `src/drafts/` is deleted (now flagged as unused) and whether this file stays in the graded repo.
 
 ## Audit fix 2: amended 13F filings (6 Nov 2026, approved by Izan)
